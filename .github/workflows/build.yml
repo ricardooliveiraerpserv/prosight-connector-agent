@@ -1,8 +1,9 @@
 name: build
 
 # Gera o agente para Windows (.exe) E Linux (binário) — PyInstaller é por-plataforma,
-# então usamos uma matriz de runners. Em push/manual: artefatos baixáveis (Actions → run → Artifacts).
-# Em tag v* : cria um Release com os binários + o pacote-fonte (.zip) anexados.
+# então usamos uma matriz de runners. Em push/manual: apenas builda+testa (CI).
+# Em tag v* : anexa cada binário + o pacote-fonte (.zip) DIRETO no Release (storage do Release,
+# fora da cota de artifacts do Actions).
 on:
   push:
     branches: [ main ]
@@ -10,7 +11,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write   # necessário para criar Release
+  contents: write   # necessário para criar/atualizar o Release
 
 jobs:
   build:
@@ -41,11 +42,11 @@ jobs:
         run: |
           mkdir -p out
           cp "${{ matrix.out }}" "out/${{ matrix.asset }}"
-      - name: Publicar artefato
-        uses: actions/upload-artifact@v4
+      - name: Anexar binário ao Release (só em tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ matrix.asset }}
-          path: out/${{ matrix.asset }}
+          files: out/${{ matrix.asset }}
 
   source-zip:
     runs-on: ubuntu-latest
@@ -57,24 +58,9 @@ jobs:
           zip -j out/prosight-connector-src.zip \
             prosight_connector.py totvs.py requirements.txt config.example.json \
             INSTALL-ONPREM.md INSTALL-LINUX.md ONBOARDING.md README.md
-      - uses: actions/upload-artifact@v4
-        with:
-          name: prosight-connector-src.zip
-          path: out/prosight-connector-src.zip
-
-  release:
-    needs: [ build, source-zip ]
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      - name: Criar Release com os anexos
+      - name: Anexar fonte ao Release (só em tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            artifacts/prosight-connector.exe/prosight-connector.exe
-            artifacts/prosight-connector-linux/prosight-connector-linux
-            artifacts/prosight-connector-src.zip/prosight-connector-src.zip
+          files: out/prosight-connector-src.zip
           generate_release_notes: true
