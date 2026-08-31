@@ -1,0 +1,8 @@
+.venv/
+state.json
+state.json.tmp
+config.json
+build/
+dist/
+*.pyc
+__pycache__/

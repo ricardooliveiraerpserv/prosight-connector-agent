@@ -1,0 +1,20 @@
+{
+  "_comment": "Copie para config.json. Duas formas de informar os AppServers: (1) camada TOTVS (descoberta REAL do appserver.ini — recomendado); (2) lista manual em 'appservers'. Se 'totvs.appserver_ini' existir e for legível, a descoberta REAL vence. Funciona em Windows E Linux.",
+  "base": "https://minutor-backend-homolog.onrender.com/api/v1",
+
+  "totvs": {
+    "_comment": "Descoberta REAL: lê o appserver.ini, checa 'up' por porta e faz hash do .rpo do disco. start/stop/restart controlam o serviço: Windows via 'sc', Linux via 'systemctl' (unit = service_prefix + nome do AppServer). service_manager: auto|windows|systemd (auto = decide pelo SO).",
+    "_windows_example": "D:\\TOTVS\\PROJETOS\\Promax_Producao\\appserver.ini",
+    "_linux_example": "/totvs/protheus/appserver.ini",
+    "appserver_ini": "D:\\TOTVS\\PROJETOS\\Promax_Producao\\appserver.ini",
+    "rpo_glob": "D:\\TOTVS\\PROJETOS\\Promax_Producao\\apo\\*.rpo",
+    "host": "127.0.0.1",
+    "service_prefix": "Protheus_",
+    "service_manager": "auto"
+  },
+
+  "appservers": [
+    { "name": "APP01", "version": "12.1.2410", "build": "9999", "patch": "12" },
+    { "name": "APP02", "version": "12.1.2410", "build": "9999", "patch": "12" }
+  ]
+}
